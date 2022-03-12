@@ -1,10 +1,10 @@
 # Employee Tracker
 
-A CLI application to organize, update, and navigate employee and department data of a company. Designed to be clear and intuitive with Node.js, Inquirer, and MySQL.
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Description
+
+A CLI application to organize, update, and navigate employee and department data of a company. Designed to be clear and intuitive with Node.js, Inquirer, and MySQL.
 
 ## Table of Contents
 
@@ -12,7 +12,6 @@ A CLI application to organize, update, and navigate employee and department data
 - [Usage](#usage)
 - [License](#license)
 - [Contribute](#contribute)
-- [Tests](#tests)
 - [Questions](#questions)
 
 ## Installation
@@ -38,10 +37,6 @@ This project is under the MIT license.
 ## Contribute
 
 Contributors can clone the repository and reach out through the contacts provided in the Questions section.
-
-## Tests
-
-`npm run test`
 
 ## Questions
 
