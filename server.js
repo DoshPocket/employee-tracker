@@ -1,7 +1,6 @@
 const inquirer = require("inquirer")
 const mysql = require("mysql2")
 const consoleTable = require('console.table')
-// const { prompts } = require('inquirer');
 
 const PORT = process.env.PORT || 3001;
 
@@ -17,12 +16,6 @@ const db = mysql.createConnection(
   console.log(`Connected to company_db.`)
 );
 
-// db.connect(function(err) {
-//   if (err) throw err
-//   console.log("Connected as Id" + connection.threadId)
-//   startTracker();
-// });
-
 function startTracker() {
   inquirer.prompt([
   {
@@ -37,6 +30,7 @@ function startTracker() {
             "Add a role",
             "Add an employee",
             "Update an employee role",
+            "Quit",
           ]
     },
   ]).then(function(val) {
@@ -60,13 +54,13 @@ function startTracker() {
             addRole();
           break;
   
-      // case "Add an employee":
-      //       addEmployee();
-      //     break;
+      case "Add an employee":
+            addEmployee();
+          break;
   
-      // case "Update an employee role":
-      //       updateRole();
-      //     break;
+      case "Update an employee role":
+            updateRole();
+          break;
 
       case "Quit":
             quitTracker();
@@ -76,7 +70,7 @@ function startTracker() {
   })
 };
 
-function viewAllDepartments() {
+const viewAllDepartments = () => {
   db.query(`SELECT department.id AS ID, department.name AS Department FROM department;`, 
   function(err, res) {
     if (err) throw err
@@ -124,7 +118,7 @@ function addDepartment() {
     },
   ]).then(data => {
     const newDepartment = data.department;
-    const sql = `INSERT INTO department (name) VALUES ("${newDepartment}");`;
+    const sql = `INSERT INTO department (name) VALUES ('${newDepartment}');`;
     db.query(sql, (err, data) => {
         if (err) throw err;
         console.table(data);
@@ -163,14 +157,13 @@ function addRole() {
               message: "To which department does the role belong?",
               name: "department",
               choices: allDepartments
-
           }
       ]).then(data => {
           let deptId = data.department;
           let salary = data.salary;
           let role = data.role;
 
-          const sql = `INSERT INTO roles (title, salary, department_id) VALUES (${role}, ${salary}, ${deptId});`;
+          const sql = `INSERT INTO roles (title, salary, department_id) VALUES ('${role}', ${salary}, ${deptId});`;
           db.query(sql, (err, data) => {
               if (err) throw err;
               console.table(data);
@@ -178,7 +171,124 @@ function addRole() {
           });
       });
   });
-}
+};
+
+function addEmployee() {
+  const sql = `SELECT id, title from roles;`;
+  db.query(sql, (err, data) => {
+    if (err) throw err;
+      const allRoles = data.map(({ id, title }) => ({
+          name: title,
+          value: id
+      }));
+      const sqlManager = `SELECT id, first_name, last_name from employee;`;
+      db.query(sqlManager, (err, data) => {
+        if (err) throw err;
+        const allManagers =  data.map(({ id, first_name, last_name }) => ({
+         name:  `${first_name} ${last_name}`,
+         value: id
+        }));
+        inquirer.prompt([
+          {
+              type: "input",
+              message: "What is the new employee's first name?",
+              name: "first_name",
+              validate: input => {
+                  if (input) {
+                      return true;
+                  }
+                  return "Please enter a first name.";
+              }
+          },
+          {
+              type: "input",
+              message: "What is the new employee's last name?",
+              name: "last_name",
+              validate: input => {
+                if (input) {
+                    return true;
+                }
+                return "Please enter a first name.";
+            }
+          },
+          {
+            type: "list",
+            message: "What is the new employee's role?",
+            name: "role",
+            choices: allRoles
+        },
+        
+          {
+              type: "list",
+              message: "Who is the new employee's manager?",
+              name: "manager",
+              choices: allManagers
+        
+          }
+        ]).then(data => {
+          let first_name = data.first_name;
+          let last_name = data.last_name;
+          let role = data.role;
+          let manager = data.manager;
+        
+          const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${first_name}', '${last_name}', ${role}, ${manager});`;
+          db.query(sql, (err, data) => {
+              if (err) throw err;
+              console.table(data);
+              startTracker();
+          });
+        });
+      });
+    });
+};
+
+function updateRole() {
+
+  const sql = `SELECT id, first_name, last_name from employee;`;
+  db.query(sql, (err, data) => {
+      const allEmployees = data.map(({ id, first_name, last_name }) => ({
+          name: first_name + " " + last_name,
+          value: id
+      }));
+      inquirer.prompt([
+          {
+              type: "list",
+              message: "Which employee would you like to update?",
+              name: "employee",
+              choices: allEmployees
+          }
+      ]).then((data) => {
+          let employeeId = "";
+          let updatedRoleId = "";
+          employeeId = data.employee
+
+          const sqlRole = `SELECT id, title FROM roles;`;
+          db.query(sqlRole, (err, data) => {
+              const allRoles = data.map(({ title, id }) => ({ name: title, value: id }));
+              inquirer.prompt([
+                  {
+                      type: "list",
+                      message: "What is the employee's new role?",
+                      name: "role",
+                      choices: allRoles
+                  }
+              ]).then((data) => {
+                  updatedRoleId = data.role;
+                  updateEmployee()
+              });
+
+              function updateEmployee() {
+                  const sqlUpdatedRole = `UPDATE employee SET role_id = ${updatedRoleId} where id = ${employeeId};`;
+                  db.query(sqlUpdatedRole, (err, data) => {
+                      if (err) throw err;
+                      console.log("Employee role updated successfully.");
+                      startTracker();
+                  });
+              };
+          });
+      });
+  });
+};
 
 function quitTracker() {
   db.end();
