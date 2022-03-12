@@ -30,6 +30,8 @@ Begin by running with `npm start`
 
 [`Link to Tutorial`](https://drive.google.com/file/d/1eRfyAiRAcI02TXMhNAoJTkRco1ojO0G0/view)
 
+https://user-images.githubusercontent.com/96542882/158028889-83b8b749-d618-4745-8b24-ef25a291b181.mp4
+
 ## License
 
 This project is under the MIT license.
